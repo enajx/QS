@@ -1,10 +1,16 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import convolve2d as convolve2d
+import matplotlib.animation as animation
+
 class CellularAutomaton:
-    def __init__(self, width, height, a, beta, threshold):
+    def __init__(self, width, height, a, beta, kappa, threshold):
         self.width = width
         self.height = height
         self.a = a
         self.beta = beta
         self.threshold = threshold
+        self.kappa = kappa
 
         self.bact_grid = np.zeros((height, width))
         self.grid = np.zeros((height, width))
@@ -17,7 +23,9 @@ class CellularAutomaton:
         self.grid = np.random.choice([0, 1], size=(self.height, self.width))
 
     def conc_field_update(self):
-        self.conc_grid = self.conc_grid*(1 - self.a) + np.convolve(self.intensity_grid, np.ones((3, 3)), mode='same', method='direct')*self.beta
+        conv_matrix = np.full((3, 3), self.kappa)
+        conv_matrix[1,1] = 1
+        self.conc_grid = self.conc_grid*(1 - self.a) + convolve2d(self.intensity_grid, conv_matrix, mode='same', boundary='wrap')*self.beta
 
     def inte_field_update(self):
         self.intensity_grid = 1/(1 + np.exp(- (self.conc_grid)/ self.threshold))
