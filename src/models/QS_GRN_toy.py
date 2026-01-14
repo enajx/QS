@@ -6,7 +6,21 @@ def hill(x, K, n):
     return x**n / (K**n + x**n)
 
 
-def grn_ode(t, state, alpha_ahl, alpha_gfp, alpha_rfp, K_ahl, K_gfp, K_rfp, n_ahl, n_gfp, n_rfp, delta, ahl_ext):
+def grn_ode(
+    t,
+    state,
+    alpha_ahl,
+    alpha_gfp,
+    alpha_rfp,
+    K_ahl,
+    K_gfp,
+    K_rfp,
+    n_ahl,
+    n_gfp,
+    n_rfp,
+    delta,
+    ahl_ext,
+):
     ahl, gfp, rfp = state
     total_ahl = ahl + ahl_ext
     d_ahl = alpha_ahl - delta * ahl
@@ -18,7 +32,11 @@ def grn_ode(t, state, alpha_ahl, alpha_gfp, alpha_rfp, K_ahl, K_gfp, K_rfp, n_ah
 def laplacian_2d(field, dx):
     lap = np.zeros_like(field)
     lap[1:-1, 1:-1] = (
-        field[:-2, 1:-1] + field[2:, 1:-1] + field[1:-1, :-2] + field[1:-1, 2:] - 4 * field[1:-1, 1:-1]
+        field[:-2, 1:-1]
+        + field[2:, 1:-1]
+        + field[1:-1, :-2]
+        + field[1:-1, 2:]
+        - 4 * field[1:-1, 1:-1]
     ) / (dx**2)
     return lap
 
@@ -59,12 +77,19 @@ def simulate(cell_positions, params, grid_size, dx, dt, n_steps):
                 [0, dt],
                 cell_states[i],
                 args=(
-                    params["alpha_ahl"], params["alpha_gfp"], params["alpha_rfp"],
-                    params["K_ahl"], params["K_gfp"], params["K_rfp"],
-                    params["n_ahl"], params["n_gfp"], params["n_rfp"],
-                    params["delta"], local_ahl[i]
+                    params["alpha_ahl"],
+                    params["alpha_gfp"],
+                    params["alpha_rfp"],
+                    params["K_ahl"],
+                    params["K_gfp"],
+                    params["K_rfp"],
+                    params["n_ahl"],
+                    params["n_gfp"],
+                    params["n_rfp"],
+                    params["delta"],
+                    local_ahl[i],
                 ),
-                method="RK45"
+                method="RK45",
             )
             cell_states[i] = sol.y[:, -1]
 
@@ -83,6 +108,7 @@ if __name__ == "__main__":
     import sys
     from pathlib import Path
     from datetime import datetime
+
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from visualisation.grn_plots import plot_simulation, animate_reporters
     from models.shapes import generate_colony
@@ -91,20 +117,34 @@ if __name__ == "__main__":
     run_dir.mkdir(parents=True, exist_ok=True)
 
     grid_size = 50
-    shape = "circle"  # "square", "circle", or "star"
+    shape = "square"  # "square", "circle", or "star"
+    # shape = "star"  # "square", "circle", or "star"
+    # shape = "circle"  # "square", "circle", or "star"
     cell_positions = generate_colony(shape, n_cells_per_side=20, center=(0.5, 0.5), size=0.6)
 
     params = {
-        "alpha_ahl": 1.0, "alpha_gfp": 2.0, "alpha_rfp": 2.0,
-        "K_ahl": 0.5, "K_gfp": 0.5, "K_rfp": 0.8,
-        "n_ahl": 2.0, "n_gfp": 2.0, "n_rfp": 2.0,
+        "alpha_ahl": 1.0,
+        "alpha_gfp": 2.0,
+        "alpha_rfp": 2.0,
+        "K_ahl": 0.5,
+        "K_gfp": 0.5,
+        "K_rfp": 0.8,
+        "n_ahl": 2.0,
+        "n_gfp": 2.0,
+        "n_rfp": 2.0,
         "delta": 0.1,
-        "D": 0.1, "mu": 0.01, "secretion_rate": 0.5
+        "D": 0.1,
+        "mu": 0.01,
+        "secretion_rate": 0.5,
     }
 
     history_states, history_field = simulate(
         cell_positions, params, grid_size, dx=1.0, dt=0.1, n_steps=100
     )
 
-    plot_simulation(history_states, history_field, cell_positions, grid_size, run_dir, show_cell_bg=False)
-    animate_reporters(history_states, cell_positions, run_dir / "reporters.mp4", fps=10, show_cell_bg=True)
+    plot_simulation(
+        history_states, history_field, cell_positions, grid_size, run_dir, show_cell_bg=False
+    )
+    animate_reporters(
+        history_states, cell_positions, run_dir / "reporters.mp4", fps=10, show_cell_bg=True
+    )
