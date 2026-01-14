@@ -48,7 +48,12 @@ def diffusion_step(ahl_field, D, mu, dt, dx, sources, source_positions, grid_siz
         gx, gy = int(px * grid_size), int(py * grid_size)
         if 0 <= gx < grid_size and 0 <= gy < grid_size:
             ahl_field[gy, gx] += dt * sources[i]
-    return np.clip(ahl_field, 0, None)
+    ahl_field = np.clip(ahl_field, 0, None)
+    ahl_field[0, :] = 0
+    ahl_field[-1, :] = 0
+    ahl_field[:, 0] = 0
+    ahl_field[:, -1] = 0
+    return ahl_field
 
 
 def get_local_ahl(ahl_field, cell_positions, grid_size):
@@ -60,10 +65,10 @@ def get_local_ahl(ahl_field, cell_positions, grid_size):
     return local_ahl
 
 
-def simulate(cell_positions, params, grid_size, dx, dt, n_steps):
+def simulate(cell_positions, params, grid_size, dx, dt, n_steps, ahl_init):
     n_cells = len(cell_positions)
     cell_states = np.zeros((n_cells, 3))
-    ahl_field = np.zeros((grid_size, grid_size))
+    ahl_field = np.full((grid_size, grid_size), ahl_init)
 
     history_states = np.zeros((n_steps, n_cells, 3))
     history_field = np.zeros((n_steps, grid_size, grid_size))
@@ -139,7 +144,7 @@ if __name__ == "__main__":
     }
 
     history_states, history_field = simulate(
-        cell_positions, params, grid_size, dx=1.0, dt=0.1, n_steps=100
+        cell_positions, params, grid_size, dx=1.0, dt=0.1, n_steps=100, ahl_init=0.0
     )
 
     plot_simulation(
