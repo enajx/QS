@@ -117,9 +117,9 @@ if __name__ == "__main__":
     run_dir.mkdir(parents=True, exist_ok=True)
 
     grid_size = 50
-    shape = "square"  # "square", "circle", or "star"
+    # shape = "square"  # "square", "circle", or "star"
     # shape = "star"  # "square", "circle", or "star"
-    # shape = "circle"  # "square", "circle", or "star"
+    shape = "circle"  # "square", "circle", or "star"
     cell_positions = generate_colony(shape, n_cells_per_side=20, center=(0.5, 0.5), size=0.6)
 
     params = {
