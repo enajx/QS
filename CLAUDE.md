@@ -12,6 +12,10 @@ dX/dt = α * Hill(A, K, n) - δ * X      (intracellular)
 ```
 
 **Trainable**: Hill coefficients `n`, thresholds `K`, production rates `α`
+To train it we do: 
+1. Simulate quorum sensing programation in colony of cells by solving GRN equations
+2. Compare final expression levels to target pattern (circle/star)
+3. Backpropagate through the GRN solver to optimize parameters.
 
 ## Structure
 
