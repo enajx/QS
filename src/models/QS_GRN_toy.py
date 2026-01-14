@@ -128,7 +128,7 @@ if __name__ == "__main__":
     # shape = "square"  # "square", "circle", or "star"
     # shape = "star"  # "square", "circle", or "star"
     shape = "circle"  # "square", "circle", or "star"
-    cell_positions = generate_colony(shape, n_cells_per_side=20, center=(0.5, 0.5), size=0.6)
+    cell_positions = generate_colony(shape, n_cells=100, center=(0.5, 0.5), size=0.6)
 
     params = {
         "alpha_ahl": 1.0,

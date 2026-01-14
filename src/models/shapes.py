@@ -1,27 +1,32 @@
 import numpy as np
 
 
-def generate_colony(shape, n_cells_per_side, center, size):
+def generate_colony(shape, n_cells, center, size):
     if shape == "square":
-        return _square_grid(n_cells_per_side, center, size)
+        return _square_grid(n_cells, center, size)
     elif shape == "circle":
-        return _circle_grid(n_cells_per_side, center, size)
+        return _circle_grid(n_cells, center, size)
     elif shape == "star":
-        return _star_grid(n_cells_per_side, center, size)
+        return _star_grid(n_cells, center, size)
     else:
         raise ValueError(f"Unknown shape: {shape}")
 
 
-def _square_grid(n_cells_per_side, center, size):
-    x = np.linspace(center[0] - size/2, center[0] + size/2, n_cells_per_side)
-    y = np.linspace(center[1] - size/2, center[1] + size/2, n_cells_per_side)
+def _square_grid(n_cells, center, size):
+    n_side = int(np.ceil(np.sqrt(n_cells)))
+    x = np.linspace(center[0] - size/2, center[0] + size/2, n_side)
+    y = np.linspace(center[1] - size/2, center[1] + size/2, n_side)
     xx, yy = np.meshgrid(x, y)
-    return np.column_stack([xx.ravel(), yy.ravel()])
+    points = np.column_stack([xx.ravel(), yy.ravel()])
+    if len(points) > n_cells:
+        indices = np.random.choice(len(points), n_cells, replace=False)
+        points = points[indices]
+    return points
 
 
-def _circle_grid(n_cells_per_side, center, size):
+def _circle_grid(n_cells, center, size):
     radius = size / 2
-    spacing = size / (n_cells_per_side - 1)
+    spacing = radius * np.sqrt(np.pi / n_cells)
     points = [np.array(center)]
     r = spacing
     while r <= radius:
@@ -33,13 +38,25 @@ def _circle_grid(n_cells_per_side, center, size):
             y = center[1] + r * np.sin(theta)
             points.append(np.array([x, y]))
         r += spacing
-    return np.array(points)
+    points = np.array(points)
+    if len(points) > n_cells:
+        indices = np.random.choice(len(points), n_cells, replace=False)
+        points = points[indices]
+    return points
 
 
-def _star_grid(n_cells_per_side, center, size):
-    square = _square_grid(n_cells_per_side, center, size)
+def _star_grid(n_cells, center, size):
+    n_side = int(np.ceil(np.sqrt(n_cells * 3)))
+    x = np.linspace(center[0] - size/2, center[0] + size/2, n_side)
+    y = np.linspace(center[1] - size/2, center[1] + size/2, n_side)
+    xx, yy = np.meshgrid(x, y)
+    square = np.column_stack([xx.ravel(), yy.ravel()])
     mask = np.array([_point_in_star(p[0], p[1], center, size) for p in square])
-    return square[mask]
+    points = square[mask]
+    if len(points) > n_cells:
+        indices = np.random.choice(len(points), n_cells, replace=False)
+        points = points[indices]
+    return points
 
 
 def _point_in_star(x, y, center, size):

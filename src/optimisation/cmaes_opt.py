@@ -226,9 +226,6 @@ def optimize_grn_params(
 def main():
     from models.shapes import generate_colony
 
-    circle_positions = generate_colony("circle", n_cells_per_side=20, center=(0.5, 0.5), size=0.6)
-    star_positions = generate_colony("star", n_cells_per_side=20, center=(0.5, 0.5), size=0.6)
-
     fixed_params = {
         "alpha_ahl": 1.0,
         "K_ahl": 0.5,
@@ -240,22 +237,26 @@ def main():
     }
 
     sim_config = {
-        "grid_size": 30,
+        "n_cells": 50,
+        "grid_size": 10,
         "dx": 1.0,
         "dt": 0.1,
-        "n_steps": 5,
+        "n_steps": 10,
         "ahl_init": 0.0,
         "fps": 10,
         "show_cell_bg": True,
     }
 
+    circle_positions = generate_colony("circle", sim_config["n_cells"], center=(0.5, 0.5), size=0.6)
+    star_positions = generate_colony("star", sim_config["n_cells"], center=(0.5, 0.5), size=0.6)
+
     cma_options = {
         "x0": [0.5, 0.8, 2.0, 2.0, 2.0, 2.0],
-        "sigma0": 1,
+        "sigma0": 0.5,
         "lower_bounds": [0.1, 0.1, 1.0, 1.0, 0.5, 0.5],
         "upper_bounds": [2.0, 2.0, 4.0, 4.0, 5.0, 5.0],
-        "maxiter": 20,
-        "popsize": 6,
+        "maxiter": 50,
+        "popsize": 32,
         "tolfun": 1e-12,
         "tolx": 1e-12,
         "verbose": 1,
