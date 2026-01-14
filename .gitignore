@@ -1,0 +1,12 @@
+**/.DS_STORE
+**/*.pyc
+.vscode/
+*.egg-info/
+media/
+.venv
+test.py
+*.mp4
+*.png
+temp.py
+results/
+temp/
