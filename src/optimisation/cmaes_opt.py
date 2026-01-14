@@ -128,10 +128,15 @@ def optimize_grn_params(
 
     x0 = cma_options.pop("x0")
     sigma0 = cma_options.pop("sigma0")
-    lower_bounds = cma_options.pop("lower_bounds")
-    upper_bounds = cma_options.pop("upper_bounds")
+    lower_bounds = cma_options.pop("lower_bounds", None)
+    upper_bounds = cma_options.pop("upper_bounds", None)
 
-    bounded_objective = cma.BoundDomainTransform(objective, [lower_bounds, upper_bounds])
+    if lower_bounds is not None and upper_bounds is not None:
+        wrapped_objective = cma.BoundDomainTransform(objective, [lower_bounds, upper_bounds])
+        transform_fn = wrapped_objective.transform
+    else:
+        wrapped_objective = objective
+        transform_fn = lambda x: np.array(x)
 
     es = cma.CMAEvolutionStrategy(x0, sigma0, cma_options)
 
@@ -141,18 +146,18 @@ def optimize_grn_params(
 
     while not es.stop():
         X = es.ask()
-        fitness_values = [bounded_objective(x) for x in X]
+        fitness_values = [wrapped_objective(x) for x in X]
         es.tell(X, fitness_values)
         es.disp()
 
         best_idx = np.argmin(fitness_values)
         losses.append(min(fitness_values))
-        param_history.append(bounded_objective.transform(X[best_idx]).tolist())
+        param_history.append(transform_fn(X[best_idx]).tolist())
 
     es.result_pretty()
 
     x_best = es.result.xbest
-    x_best_transformed = bounded_objective.transform(x_best)
+    x_best_transformed = transform_fn(x_best)
 
     best_params = {
         "K_gfp": float(x_best_transformed[0]),
@@ -235,10 +240,10 @@ def main():
     }
 
     sim_config = {
-        "grid_size": 80,
+        "grid_size": 30,
         "dx": 1.0,
         "dt": 0.1,
-        "n_steps": 50,
+        "n_steps": 5,
         "ahl_init": 0.0,
         "fps": 10,
         "show_cell_bg": True,
@@ -246,10 +251,10 @@ def main():
 
     cma_options = {
         "x0": [0.5, 0.8, 2.0, 2.0, 2.0, 2.0],
-        "sigma0": 0.3,
+        "sigma0": 1,
         "lower_bounds": [0.1, 0.1, 1.0, 1.0, 0.5, 0.5],
         "upper_bounds": [2.0, 2.0, 4.0, 4.0, 5.0, 5.0],
-        "maxiter": 2,
+        "maxiter": 20,
         "popsize": 6,
         "tolfun": 1e-12,
         "tolx": 1e-12,

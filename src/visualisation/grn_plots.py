@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.patches import Circle
+from matplotlib.colors import LinearSegmentedColormap
 
 
 def plot_simulation(history_states, history_field, cell_positions, grid_size, output_dir, show_cell_bg):
@@ -46,14 +47,19 @@ def plot_simulation(history_states, history_field, cell_positions, grid_size, ou
 
 def animate_reporters(history_states, cell_positions, output_path, fps, show_cell_bg):
     n_steps = len(history_states)
-    gfp_max = history_states[:, :, 1].max() + 1e-6
-    rfp_max = history_states[:, :, 2].max() + 1e-6
+    gfp_all = history_states[:, :, 1]
+    rfp_all = history_states[:, :, 2]
+    gfp_max = max(gfp_all.max(), 1e-6)
+    rfp_max = max(rfp_all.max(), 1e-6)
+
+    cmap_gfp = LinearSegmentedColormap.from_list("white_green", ["white", "green"])
+    cmap_rfp = LinearSegmentedColormap.from_list("white_red", ["white", "red"])
 
     fig, (ax_gfp, ax_rfp) = plt.subplots(1, 2, figsize=(10, 5))
 
     if show_cell_bg:
-        ax_gfp.scatter(cell_positions[:, 0], cell_positions[:, 1], c="lightgray", s=120, edgecolors="gray", linewidths=0.5)
-    scatter_gfp = ax_gfp.scatter([], [], c=[], cmap="Greens", vmin=0, vmax=gfp_max, s=100, edgecolors="gray", linewidths=0.5)
+        ax_gfp.scatter(cell_positions[:, 0], cell_positions[:, 1], c="white", s=120, edgecolors="lightgray", linewidths=0.5)
+    scatter_gfp = ax_gfp.scatter(cell_positions[:, 0], cell_positions[:, 1], c=np.zeros(len(cell_positions)), cmap=cmap_gfp, vmin=0, vmax=gfp_max, s=100, edgecolors="gray", linewidths=0.5)
     ax_gfp.set_xlim(0, 1)
     ax_gfp.set_ylim(0, 1)
     ax_gfp.set_title("GFP")
@@ -61,8 +67,8 @@ def animate_reporters(history_states, cell_positions, output_path, fps, show_cel
     plt.colorbar(scatter_gfp, ax=ax_gfp)
 
     if show_cell_bg:
-        ax_rfp.scatter(cell_positions[:, 0], cell_positions[:, 1], c="lightgray", s=120, edgecolors="gray", linewidths=0.5)
-    scatter_rfp = ax_rfp.scatter([], [], c=[], cmap="Reds", vmin=0, vmax=rfp_max, s=100, edgecolors="gray", linewidths=0.5)
+        ax_rfp.scatter(cell_positions[:, 0], cell_positions[:, 1], c="white", s=120, edgecolors="lightgray", linewidths=0.5)
+    scatter_rfp = ax_rfp.scatter(cell_positions[:, 0], cell_positions[:, 1], c=np.zeros(len(cell_positions)), cmap=cmap_rfp, vmin=0, vmax=rfp_max, s=100, edgecolors="gray", linewidths=0.5)
     ax_rfp.set_xlim(0, 1)
     ax_rfp.set_ylim(0, 1)
     ax_rfp.set_title("RFP")

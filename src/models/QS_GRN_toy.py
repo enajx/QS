@@ -70,8 +70,11 @@ def simulate(cell_positions, params, grid_size, dx, dt, n_steps, ahl_init):
     cell_states = np.zeros((n_cells, 3))
     ahl_field = np.full((grid_size, grid_size), ahl_init)
 
-    history_states = np.zeros((n_steps, n_cells, 3))
-    history_field = np.zeros((n_steps, grid_size, grid_size))
+    history_states = np.zeros((n_steps + 1, n_cells, 3))
+    history_field = np.zeros((n_steps + 1, grid_size, grid_size))
+
+    history_states[0] = cell_states.copy()
+    history_field[0] = ahl_field.copy()
 
     for step in range(n_steps):
         local_ahl = get_local_ahl(ahl_field, cell_positions, grid_size)
@@ -103,8 +106,8 @@ def simulate(cell_positions, params, grid_size, dx, dt, n_steps, ahl_init):
             ahl_field, params["D"], params["mu"], dt, dx, sources, cell_positions, grid_size
         )
 
-        history_states[step] = cell_states.copy()
-        history_field[step] = ahl_field.copy()
+        history_states[step + 1] = cell_states.copy()
+        history_field[step + 1] = ahl_field.copy()
 
     return history_states, history_field
 
