@@ -82,13 +82,17 @@ def simulate(cell_positions, params, grid_size, dx, dt, n_steps):
 if __name__ == "__main__":
     import sys
     from pathlib import Path
+    from datetime import datetime
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from visualisation.grn_plots import plot_simulation
+    from visualisation.grn_plots import plot_simulation, animate_reporters
+    from models.shapes import generate_colony
+
+    run_dir = Path("results") / datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_dir.mkdir(parents=True, exist_ok=True)
 
     grid_size = 50
-    n_cells = 25
-    np.random.seed(42)
-    cell_positions = np.random.rand(n_cells, 2) * 0.6 + 0.2
+    shape = "circle"  # "square", "circle", or "star"
+    cell_positions = generate_colony(shape, n_cells_per_side=20, center=(0.5, 0.5), size=0.6)
 
     params = {
         "alpha_ahl": 1.0, "alpha_gfp": 2.0, "alpha_rfp": 2.0,
@@ -102,4 +106,5 @@ if __name__ == "__main__":
         cell_positions, params, grid_size, dx=1.0, dt=0.1, n_steps=100
     )
 
-    plot_simulation(history_states, history_field, cell_positions, grid_size)
+    plot_simulation(history_states, history_field, cell_positions, grid_size, run_dir, show_cell_bg=False)
+    animate_reporters(history_states, cell_positions, run_dir / "reporters.mp4", fps=10, show_cell_bg=True)

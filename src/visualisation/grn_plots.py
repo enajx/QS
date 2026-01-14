@@ -1,15 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+from matplotlib.patches import Circle
 
 
-def plot_simulation(history_states, history_field, cell_positions, grid_size):
+def plot_simulation(history_states, history_field, cell_positions, grid_size, output_dir, show_cell_bg):
     fig, axes = plt.subplots(2, 3, figsize=(12, 8))
 
     steps_to_show = [0, len(history_field) // 2, len(history_field) - 1]
     for idx, step in enumerate(steps_to_show):
         ax = axes[0, idx]
         im = ax.imshow(history_field[step], origin="lower", cmap="YlOrRd", extent=[0, 1, 0, 1])
-        ax.scatter(cell_positions[:, 0], cell_positions[:, 1], c="blue", s=20, alpha=0.7)
+        if show_cell_bg:
+            ax.scatter(cell_positions[:, 0], cell_positions[:, 1], c="lightgray", s=20, edgecolors="gray", linewidths=0.5)
         ax.set_title(f"AHL field (step {step})")
         plt.colorbar(im, ax=ax)
 
@@ -29,7 +32,7 @@ def plot_simulation(history_states, history_field, cell_positions, grid_size):
     colors = np.zeros((len(cell_positions), 3))
     colors[:, 0] = final_rfp / (final_rfp.max() + 1e-6)
     colors[:, 1] = final_gfp / (final_gfp.max() + 1e-6)
-    ax.scatter(cell_positions[:, 0], cell_positions[:, 1], c=colors, s=100)
+    ax.scatter(cell_positions[:, 0], cell_positions[:, 1], c=colors, s=80, edgecolors="gray", linewidths=0.5)
     ax.set_title("Final reporter (R=RFP, G=GFP)")
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
@@ -37,5 +40,45 @@ def plot_simulation(history_states, history_field, cell_positions, grid_size):
     axes[1, 2].axis("off")
 
     plt.tight_layout()
-    plt.savefig("results/grn_simulation.png", dpi=150)
+    plt.savefig(output_dir / "grn_simulation.png", dpi=150)
     plt.show()
+
+
+def animate_reporters(history_states, cell_positions, output_path, fps, show_cell_bg):
+    n_steps = len(history_states)
+    gfp_max = history_states[:, :, 1].max() + 1e-6
+    rfp_max = history_states[:, :, 2].max() + 1e-6
+
+    fig, (ax_gfp, ax_rfp) = plt.subplots(1, 2, figsize=(10, 5))
+
+    if show_cell_bg:
+        ax_gfp.scatter(cell_positions[:, 0], cell_positions[:, 1], c="lightgray", s=120, edgecolors="gray", linewidths=0.5)
+    scatter_gfp = ax_gfp.scatter([], [], c=[], cmap="Greens", vmin=0, vmax=gfp_max, s=100, edgecolors="gray", linewidths=0.5)
+    ax_gfp.set_xlim(0, 1)
+    ax_gfp.set_ylim(0, 1)
+    ax_gfp.set_title("GFP")
+    ax_gfp.set_aspect("equal")
+    plt.colorbar(scatter_gfp, ax=ax_gfp)
+
+    if show_cell_bg:
+        ax_rfp.scatter(cell_positions[:, 0], cell_positions[:, 1], c="lightgray", s=120, edgecolors="gray", linewidths=0.5)
+    scatter_rfp = ax_rfp.scatter([], [], c=[], cmap="Reds", vmin=0, vmax=rfp_max, s=100, edgecolors="gray", linewidths=0.5)
+    ax_rfp.set_xlim(0, 1)
+    ax_rfp.set_ylim(0, 1)
+    ax_rfp.set_title("RFP")
+    ax_rfp.set_aspect("equal")
+    plt.colorbar(scatter_rfp, ax=ax_rfp)
+
+    def update(frame):
+        gfp = history_states[frame, :, 1]
+        rfp = history_states[frame, :, 2]
+        scatter_gfp.set_offsets(cell_positions)
+        scatter_gfp.set_array(gfp)
+        scatter_rfp.set_offsets(cell_positions)
+        scatter_rfp.set_array(rfp)
+        fig.suptitle(f"Step {frame}")
+        return scatter_gfp, scatter_rfp
+
+    anim = FuncAnimation(fig, update, frames=n_steps, blit=False)
+    anim.save(output_path, writer="ffmpeg", fps=fps)
+    plt.close()
