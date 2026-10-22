@@ -11,3 +11,15 @@ test.py
 temp.py
 results/
 temp/
+
+# Local shared Markdown links
+/AGENTS.md
+/CLAUDE.md
+/md/instructions/CLUSTER_INSTRUCTIONS.md
+/md/instructions/REMOTE_SSH.md
+/md/instructions/SLURM_INSTRUCTIONS.md
+/md/instructions/ITU_HPC.md
+/md/instructions/REAL_CLUSTER.md
+/md/instructions/GEFION_HPC.md
+/md/instructions/EXPERIMENT_TRACKING_SQLITE.md
+/md/instructions/EXPERIMENT_REPORTS.md
